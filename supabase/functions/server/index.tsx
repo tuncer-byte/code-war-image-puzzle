@@ -40,6 +40,11 @@ app.use(
   }),
 );
 
+const PIECE_SIZE = 200;
+const PIECE_GAP = 40;
+const PIECE_SPACING = PIECE_SIZE + PIECE_GAP;
+const MAX_PLACEMENT_SEARCH_RADIUS = 25;
+
 // Health check endpoint
 app.get("/make-server-938109ab/health", (c) => {
   return c.json({ status: "ok" });
@@ -70,8 +75,6 @@ app.post("/make-server-938109ab/sessions", async (c) => {
     return c.json({ error: 'Failed to create session', details: String(error) }, 500);
   }
 });
-
-// Get session by ID
 app.get("/make-server-938109ab/sessions/:id", async (c) => {
   try {
     const sessionId = c.req.param('id');
@@ -124,17 +127,20 @@ app.post("/make-server-938109ab/sessions/:id/pieces", async (c) => {
       }, 429);
     }
 
-    // Add the piece
-    const pieces = await kv.get(`pieces:${sessionId}`) || [];
-    const newPiece = {
-      id: `${userId}-${now}`,
-      userId,
-      imageUrl,
-      x: x || 0,
-      y: y || 0,
-      rotation: rotation || 0,
-      addedAt: now,
-    };
+      // Add the piece
+      const pieces = await kv.get(`pieces:${sessionId}`) || [];
+      const baseX = typeof x === 'number' ? x : 0;
+      const baseY = typeof y === 'number' ? y : 0;
+      const [safeX, safeY] = findAvailablePosition(pieces, baseX, baseY);
+      const newPiece = {
+        id: `${userId}-${now}`,
+        userId,
+        imageUrl,
+        x: safeX,
+        y: safeY,
+        rotation: rotation || 0,
+        addedAt: now,
+      };
 
     pieces.push(newPiece);
     await kv.set(`pieces:${sessionId}`, pieces);
@@ -147,6 +153,52 @@ app.post("/make-server-938109ab/sessions/:id/pieces", async (c) => {
     return c.json({ error: 'Failed to add piece', details: String(error) }, 500);
   }
 });
+
+function findAvailablePosition(
+  pieces: Array<{ x?: number; y?: number }>,
+  baseX: number,
+  baseY: number,
+): [number, number] {
+  for (let radius = 0; radius <= MAX_PLACEMENT_SEARCH_RADIUS; radius += 1) {
+    const offsets = radius === 0
+      ? [[0, 0]]
+      : [
+        [-radius, -radius],
+        [0, -radius],
+        [radius, -radius],
+        [-radius, 0],
+        [radius, 0],
+        [-radius, radius],
+        [0, radius],
+        [radius, radius],
+      ];
+
+    for (const [offsetX, offsetY] of offsets) {
+      const candidateX = baseX + offsetX * PIECE_SPACING;
+      const candidateY = baseY + offsetY * PIECE_SPACING;
+
+      if (!isOverlapping(pieces, candidateX, candidateY)) {
+        return [candidateX, candidateY];
+      }
+    }
+  }
+
+  return [baseX, baseY];
+}
+
+function isOverlapping(
+  pieces: Array<{ x?: number; y?: number }>,
+  candidateX: number,
+  candidateY: number,
+): boolean {
+  return pieces.some((piece) => {
+    const pieceX = typeof piece.x === 'number' ? piece.x : 0;
+    const pieceY = typeof piece.y === 'number' ? piece.y : 0;
+
+    return Math.abs(pieceX - candidateX) < PIECE_SPACING &&
+      Math.abs(pieceY - candidateY) < PIECE_SPACING;
+  });
+}
 
 // Check user cooldown
 app.get("/make-server-938109ab/sessions/:id/cooldown/:userId", async (c) => {
