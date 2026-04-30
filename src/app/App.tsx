@@ -164,7 +164,7 @@ export default function App() {
         <div className="flex gap-4">
           <div className="bg-[#ffeb3b] border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] px-6 py-3 flex items-center gap-2">
             <Users className="w-5 h-5" />
-            <span className="font-black text-lg">{pieces.length} PARÇA</span>
+            <span className="font-black text-lg">{Math.min(pieces.length, 16)}/16 PARÇA</span>
           </div>
 
           <Button
