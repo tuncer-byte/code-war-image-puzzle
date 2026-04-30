@@ -31,10 +31,10 @@ export function SessionCreator({ onSessionCreated, onSessionJoin }: SessionCreat
       <div className="flex flex-col items-center justify-center min-h-screen bg-[#fef9f3] p-8">
         <div className="bg-[#ffeb3b] border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-12 max-w-lg">
           <h1 className="text-6xl font-black mb-4 text-center transform -rotate-2">
-            PUZZLE PARTY
+            DIVIZYON PUZZLE
           </h1>
           <p className="text-xl font-bold mb-8 text-center">
-            Multiplayer sonsuz canvas puzzle oyunu!
+            Multiplayer 4×4 çok oyunculu puzzle!
           </p>
           <div className="flex flex-col gap-4">
             <Button

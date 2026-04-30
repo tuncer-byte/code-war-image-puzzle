@@ -89,7 +89,7 @@ export default function App() {
         },
         body: JSON.stringify({
           sessionId: newSessionId,
-          name: 'Puzzle Party',
+          name: 'Divizyon Puzzle',
         }),
       });
 
@@ -157,7 +157,7 @@ export default function App() {
       <div className="absolute top-4 left-4 right-4 z-40 flex items-center justify-between">
         <div className="bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] px-6 py-3">
           <h2 className="text-2xl font-black transform -rotate-1">
-            {session?.name || 'PUZZLE PARTY'}
+            {session?.name || 'DIVIZYON PUZZLE'}
           </h2>
         </div>
 
